@@ -13,3 +13,6 @@ runs:
   image: docker://ashutoshgngwr/validate-fastlane-supply-metadata:v1
   args:
     - -fastlane-path=${{ inputs.fastlaneDir }}
+branding:
+  color: blue
+  icon: eye
