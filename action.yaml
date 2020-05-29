@@ -1,0 +1,15 @@
+name: Validate Fastlane supply metadata
+author: ashutoshgngwr
+description: >-
+  GitHub action to statically validate Fastlane supply metadata for Android against
+  the Play Store listing constraints.
+inputs:
+  fastlaneDir:
+    description: Path of the Fastlane directory
+    required: false
+    default: ./fastlane
+runs:
+  using: docker
+  image: docker://ashutoshgngwr/validate-fastlane-supply-metadata:v1
+  args:
+    - -fastlane-path=${{ inputs.fastlaneDir }}
