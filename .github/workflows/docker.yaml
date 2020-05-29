@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - releases/**
+    paths-ignore:
+      - "**.md"
 
 env:
   docker-tag: ashutoshgngwr/validate-fastlane-supply-metadata:${GITHUB_REF##*/}
