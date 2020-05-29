@@ -1,4 +1,4 @@
-name: Validate Fastlane supply metadata
+name: Validate Fastlane Supply Metadata
 author: ashutoshgngwr
 description: >-
   GitHub action to statically validate Fastlane supply metadata for Android against
