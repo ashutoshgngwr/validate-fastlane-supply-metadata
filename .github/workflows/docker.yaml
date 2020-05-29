@@ -1,0 +1,23 @@
+name: Docker
+on:
+  push:
+    branches:
+      - releases/**
+
+env:
+  docker-tag: ashutoshgngwr/validate-fastlane-supply-metadata:${GITHUB_REF##*/}
+
+jobs:
+  build-base:
+    name: Build and Push Image
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: docker build -t "${{ env.docker-tag }}" -f Dockerfile .
+      - run: echo "$DOCKER_HUB_ACCESS_TOKEN" | docker login -u ashutoshgngwr --password-stdin
+        env:
+          DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - run: docker push "${{ env.docker-tag }}"
+      - if: ${{ always() }}
+        run: docker logout
