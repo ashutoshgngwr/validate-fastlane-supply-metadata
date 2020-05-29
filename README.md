@@ -1,8 +1,17 @@
 # Validate Fastlane Supply Metadata
 
-![Docker](https://github.com/ashutoshgngwr/validate-fastlane-supply-metadata/workflows/Docker/badge.svg)
+![Docker build](https://github.com/ashutoshgngwr/validate-fastlane-supply-metadata/workflows/Docker/badge.svg)
+![Docker image size](https://img.shields.io/docker/image-size/ashutoshgngwr/validate-fastlane-supply-metadata?sort=semver)
 
-A Github Action to statically validate Fastlane metadata for Android (supply).
+A Github Action to statically validate Fastlane metadata for Android (supply) using a
+simple validation logic written in Golang.
+
+## Features
+
+- Checks title, short description and full description texts
+- Checks promo images
+- Checks screenshots
+- Tiny docker image ~800KB
 
 ## Example Use Case
 
@@ -14,9 +23,9 @@ To run this job for PRs, I would need to expose the service account key
 for accessing the Play Store which is a major security flaw.
 
 This action uses a docker image to validate Fastlane's metadata. The docker image
-is built from the Go source from this repository. The Go source code is just a
-250 lines of validation logic to test all the files in Fastlane metadata against
-the constraints from the Play Store listing.
+is built from the Go code in this repository. The Go code is ~250 lines of
+validation logic to test all the files in Fastlane metadata against the constraints
+from the Play Store listing.
 
 ## Usage
 
