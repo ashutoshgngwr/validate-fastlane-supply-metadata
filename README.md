@@ -3,15 +3,18 @@
 ![Docker build](https://github.com/ashutoshgngwr/validate-fastlane-supply-metadata/workflows/Docker/badge.svg)
 ![Docker image size](https://img.shields.io/docker/image-size/ashutoshgngwr/validate-fastlane-supply-metadata?sort=semver)
 
-A Github Action to statically validate Fastlane metadata for Android (supply) using a
-simple validation logic written in Golang.
+A Github Action to statically validate [Fastlane](https://docs.fastlane.tools) metadata
+for Android ([supply](https://docs.fastlane.tools/actions/supply/)) using a simple
+validation logic written in Golang.
 
 ## Features
 
+- Zero config
 - Checks title, short description and full description texts
 - Checks promo images
 - Checks screenshots
 - Tiny docker image ~800KB
+- Can be used without GitHub actions
 
 ## Example Use Case
 
@@ -39,6 +42,15 @@ jobs:
     - uses: ashutoshgngwr/validate-fastlane-supply-metadata@v1
       with:
         fastlaneDir: ./fastlane # optional. default is './fastlane'
+```
+
+### Without GitHub actions
+
+The GitHub action relies on a docker image which can be used directly.
+
+```sh
+docker run --rm --workdir /app --mount type=bind,source="$(pwd)",target=/app \
+   ashutoshgngwr/validate-fastlane-supply-metadata:v1 -fastlane-path="./fastlane"
 ```
 
 ## License
