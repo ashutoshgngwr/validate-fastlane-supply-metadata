@@ -10,7 +10,7 @@ on:
       - "**.md"
 
 env:
-  docker-tag: ashutoshgngwr/validate-fastlane-supply-metadata:${GITHUB_REF##*/}
+  docker-tag: ashutoshgngwr/validate-fastlane-supply-metadata:${GITHUB_REF#refs/heads/}
 
 jobs:
   build-base:
