@@ -138,40 +138,47 @@ func processImages(basePath, locale string) (isErrored error) {
 			case "icon":
 				if config.width != config.height || config.width != 512 {
 					err = fmt.Errorf("must be 512x512")
+					logError(locale, baseName, err)
 				}
 				if config.format != "png" {
 					err = fmt.Errorf("must be a PNG")
+					logError(locale, baseName, err)
 				}
 				break
 			case "featureGraphic":
 				if config.width != 1024 || config.height != 500 {
 					err = fmt.Errorf("must be 1024x500")
+					logError(locale, baseName, err)
 				}
 				if !config.opaque {
 					err = fmt.Errorf("must be opaque")
+					logError(locale, baseName, err)
 				}
 				break
 			case "promoGraphic":
 				if config.width != 180 || config.height != 120 {
 					err = fmt.Errorf("must be 180x120")
+					logError(locale, baseName, err)
 				}
 				if !config.opaque {
 					err = fmt.Errorf("must be opaque")
+					logError(locale, baseName, err)
 				}
 				break
 			case "tvBanner":
 				if config.width != 1280 || config.height != 720 {
 					err = fmt.Errorf("must be 1280x720")
+					logError(locale, baseName, err)
 				}
 				if !config.opaque {
 					err = fmt.Errorf("must be opaque")
+					logError(locale, baseName, err)
 				}
 				break
 
 			}
 
 			if err != nil {
-				logError(locale, baseName, err)
 				isErrored = err
 			}
 		}
@@ -200,21 +207,23 @@ func processScreenshotImages(basePath, locale, dirName string) (isErrored error)
 
 		if config.width < 320 || config.width > 3840 {
 			err = fmt.Errorf("width should be at least 320px and at most 3840px")
+			logError(locale, filepath.Join(dirName, file.Name()), err)
 		}
 
 		if config.height < 320 || config.height > 3840 {
 			err = fmt.Errorf("height should be at least 320px and at most 3840px")
+			logError(locale, filepath.Join(dirName, file.Name()), err)
 		}
 
 		width := float64(config.width)
 		height := float64(config.height)
 		if math.Max(width, height)/math.Min(height, width) > 2.0 {
 			err = fmt.Errorf("aspect ratio of max edge to min edge should be at most 2")
+			logError(locale, filepath.Join(dirName, file.Name()), err)
 		}
 
 		if err != nil {
 			isErrored = err
-			logError(locale, filepath.Join(dirName, file.Name()), err)
 		}
 	}
 
