@@ -110,10 +110,9 @@ func getCharacterCount(filePath string) (int, error) {
 // returns an error if any of the checks fail. also prints all the errors
 // for failing checks.
 func processImages(basePath, locale string) (isErrored error) {
-	// ignoring list error because images are optional in metadata
 	imagesBasePath := filepath.Join(basePath, locale, "images")
 	files, err := ioutil.ReadDir(imagesBasePath)
-	if err != nil {
+	if err != nil && !os.IsNotExist(err) { // ignore not found errors since this is an optional dir
 		logError(locale, "images", err)
 		return err
 	}
