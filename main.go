@@ -69,6 +69,10 @@ func processLocale(basePath, locale string) (isErrored error) {
 		isErrored = err
 	}
 
+	if err := processChangelogs(basePath, locale); err != nil {
+		isErrored = err
+	}
+
 	return
 }
 
@@ -266,6 +270,33 @@ func getImageConfig(filePath string) (*imageConfig, error) {
 		opaque: opaque,
 		format: format,
 	}, nil
+}
+
+// processDescriptiveTexts will check changelogs/*.txt files in metadata. returns an error
+// if any of the checks fail. also prints all the errors for failing checks.
+func processChangelogs(basePath, locale string) (isErrored error) {
+	changelogPath := filepath.Join(basePath, locale, "changelogs")
+	files, err := ioutil.ReadDir(changelogPath)
+	if err != nil && !os.IsNotExist(err) { // ignore not found errors since this is an optional dir
+		logError(locale, "changelogs", err)
+		return err
+	}
+	for _, file := range files {
+		if file.IsDir() {
+			continue // not expecting one.. but okay...?
+		}
+
+		count, err := getCharacterCount(filepath.Join(changelogPath, file.Name()))
+		if err == nil && count > 500 {
+			err = fmt.Errorf("content length exceeded the limit got: %d desired: %d", count, 500)
+		}
+
+		if err != nil {
+			logError(locale, filepath.Join("changelogs", file.Name()), err)
+			isErrored = err
+		}
+	}
+	return
 }
 
 // logError logs the error
