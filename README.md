@@ -10,7 +10,7 @@ validation logic written in Golang.
 ## Features
 
 - Zero config
-- Checks title, short description and full description texts
+- Checks title, short description, full description and changelog texts
 - Checks promo images
 - Checks screenshots
 - Tiny docker image ~800KB
@@ -26,7 +26,7 @@ To run this job for PRs, I would need to expose the service account key
 for accessing the Play Store which is a major security flaw.
 
 This action uses a docker image to validate Fastlane's metadata. The docker image
-is built from the Go code in this repository. The Go code is ~250 lines of
+is built from the Go code in this repository. The Go code is ~300 lines of
 validation logic to test all the files in Fastlane metadata against the constraints
 from the Play Store listing.
 
@@ -50,7 +50,7 @@ The GitHub action relies on a docker image which can be used directly.
 
 ```sh
 docker run --rm --workdir /app --mount type=bind,source="$(pwd)",target=/app \
-   ashutoshgngwr/validate-fastlane-supply-metadata:v1 -fastlane-path="./fastlane"
+   ashutoshgngwr/validate-fastlane-supply-metadata:v1 -help
 ```
 
 ## License
