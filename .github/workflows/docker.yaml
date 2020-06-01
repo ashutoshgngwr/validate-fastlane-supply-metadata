@@ -10,7 +10,7 @@ on:
       - "**.md"
 
 env:
-  docker-tag: ashutoshgngwr/validate-fastlane-supply-metadata:${GITHUB_REF#refs/heads/}
+  docker-tag: ashutoshgngwr/validate-fastlane-supply-metadata:$(echo $GITHUB_REF | sed -e "s/refs\/tags\///g" -e "s/refs\/heads\///g")
 
 jobs:
   build-base:
@@ -19,10 +19,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - run: docker build -t "${{ env.docker-tag }}" -f Dockerfile .
+      - run: docker build -t ${{ env.docker-tag }} -f Dockerfile .
       - run: echo "$DOCKER_HUB_ACCESS_TOKEN" | docker login -u ashutoshgngwr --password-stdin
         env:
           DOCKER_HUB_ACCESS_TOKEN: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-      - run: docker push "${{ env.docker-tag }}"
+      - run: docker push ${{ env.docker-tag }}
       - if: ${{ always() }}
         run: docker logout
