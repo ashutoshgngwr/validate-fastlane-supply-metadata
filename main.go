@@ -56,10 +56,10 @@ func main() {
 	}
 }
 
-// processLocale will check all metadata items one by one for each locale.
-// it returns the last error if the metadata is voilating set guidelines or
-// if there was an error while processing any of the files.
-// printing of errors is handled internally by each function down the stream.
+// processLocale will check all metadata items one by one for each locale. it
+// returns the last error if the metadata is voilating set guidelines or if
+// there was an error while processing any of the files. printing of errors is
+// handled internally by each function down the stream.
 func processLocale(basePath, locale string) (isErrored error) {
 	if err := processDescriptiveTexts(basePath, locale); err != nil {
 		isErrored = err
@@ -79,6 +79,7 @@ func processLocale(basePath, locale string) (isErrored error) {
 // processDescriptiveTexts will check *.txt files in metadata. returns an error
 // if any of the checks fail. also prints all the errors for failing checks.
 func processDescriptiveTexts(basePath, locale string) (isErrored error) {
+	const errLengthExceededFmt = "content length exceeded the limit! expected: %d, got: %d"
 	descriptiveFileLengths := map[string]int{
 		"title.txt":             50,
 		"short_description.txt": 80,
@@ -88,7 +89,7 @@ func processDescriptiveTexts(basePath, locale string) (isErrored error) {
 	for file, length := range descriptiveFileLengths {
 		count, err := getCharacterCount(filepath.Join(basePath, locale, file))
 		if err == nil && count > length {
-			err = fmt.Errorf("content length exceeded the limit got: %d desired: %d", count, length)
+			err = fmt.Errorf(errLengthExceededFmt, length, count)
 		}
 
 		if err != nil {
@@ -110,9 +111,9 @@ func getCharacterCount(filePath string) (int, error) {
 	return utf8.RuneCountInString(strings.TrimSpace(string(content))), nil
 }
 
-// processImages process image assets in images/* including screenshots.
-// returns an error if any of the checks fail. also prints all the errors
-// for failing checks.
+// processImages process image assets in images/* including screenshots. returns
+// an error if any of the checks fail. also prints all the errors for failing
+// checks.
 func processImages(basePath, locale string) (isErrored error) {
 	imagesBasePath := filepath.Join(basePath, locale, "images")
 	files, err := ioutil.ReadDir(imagesBasePath)
@@ -178,7 +179,6 @@ func processImages(basePath, locale string) (isErrored error) {
 					logError(locale, baseName, err)
 				}
 				break
-
 			}
 
 			if err != nil {
@@ -233,8 +233,8 @@ func processScreenshotImages(basePath, locale, dirName string) (isErrored error)
 	return
 }
 
-// getImageConfig returns imageConfig for the given image file. returns
-// an error it is not able to read the image config.
+// getImageConfig returns imageConfig for the given image file. returns an error
+// it is not able to read the image config.
 func getImageConfig(filePath string) (*imageConfig, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -272,13 +272,19 @@ func getImageConfig(filePath string) (*imageConfig, error) {
 	}, nil
 }
 
-// processDescriptiveTexts will check changelogs/*.txt files in metadata. returns an error
-// if any of the checks fail. also prints all the errors for failing checks.
+// processDescriptiveTexts will check changelogs/*.txt files in metadata.
+// returns an error if any of the checks fail. also prints all the errors for
+// failing checks.
 func processChangelogs(basePath, locale string) (isErrored error) {
-	changelogPath := filepath.Join(basePath, locale, "changelogs")
+	const maxContentLength = 500
+	const changelogsDirName = "changelogs"
+	const errLengthExceededFmt = "content length exceeded the limit! expected: %d, got: %d"
+
+	changelogPath := filepath.Join(basePath, locale, changelogsDirName)
 	files, err := ioutil.ReadDir(changelogPath)
-	if err != nil && !os.IsNotExist(err) { // ignore not found errors since this is an optional dir
-		logError(locale, "changelogs", err)
+	if err != nil && !os.IsNotExist(err) {
+		// ignore not found errors since this is an optional dir
+		logError(locale, changelogsDirName, err)
 		return err
 	}
 	for _, file := range files {
@@ -287,12 +293,12 @@ func processChangelogs(basePath, locale string) (isErrored error) {
 		}
 
 		count, err := getCharacterCount(filepath.Join(changelogPath, file.Name()))
-		if err == nil && count > 500 {
-			err = fmt.Errorf("content length exceeded the limit got: %d desired: %d", count, 500)
+		if err == nil && count > maxContentLength {
+			err = fmt.Errorf(errLengthExceededFmt, maxContentLength, count)
 		}
 
 		if err != nil {
-			logError(locale, filepath.Join("changelogs", file.Name()), err)
+			logError(locale, filepath.Join(changelogsDirName, file.Name()), err)
 			isErrored = err
 		}
 	}
@@ -301,5 +307,5 @@ func processChangelogs(basePath, locale string) (isErrored error) {
 
 // logError logs the error
 func logError(locale, file string, err error) {
-	fmt.Printf("%s/%s: %s\n", locale, file, err.Error())
+	fmt.Fprintf(os.Stderr, "%s/%s: %s\n", locale, file, err.Error())
 }
