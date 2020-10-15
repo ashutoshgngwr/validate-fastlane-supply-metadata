@@ -23,7 +23,8 @@ type imageConfig struct {
 }
 
 var (
-	fastlanePath string
+	fastlanePath        string
+	enableGAAnnotations bool
 
 	// nErrors keeps the count of failed checks during a single run.
 	nErrors uint
@@ -31,6 +32,7 @@ var (
 
 func init() {
 	flag.StringVar(&fastlanePath, "fastlane-path", "./fastlane", "path to the Fastlane directory")
+	flag.BoolVar(&enableGAAnnotations, "enable-ga-annotations", false, "enables file annotations for GitHub action")
 	flag.Parse()
 }
 
@@ -296,6 +298,10 @@ func logError(locale, file string, err error) {
 }
 
 func annotateFileWithError(filePath string, err error) {
+	if !enableGAAnnotations {
+		return
+	}
+
 	const errAnnotationFmt = "::error file=%s::%s\n"
 	v := strings.ReplaceAll(err.Error(), "%", "%25")
 	v = strings.ReplaceAll(v, "\r", "%0D")
