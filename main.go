@@ -24,6 +24,9 @@ type imageConfig struct {
 
 var (
 	fastlanePath string
+
+	// nErrors keeps the count of failed checks during a single run.
+	nErrors uint
 )
 
 func init() {
@@ -39,46 +42,27 @@ func main() {
 		os.Exit(1)
 	}
 
-	var isErrored error
 	for _, f := range files {
 		if !f.IsDir() {
 			// we are only interested in directories
 			continue
 		}
 
-		if err := processLocale(metadataPath, f.Name()); err != nil {
-			isErrored = err
-		}
+		processDescriptiveTexts(metadataPath, f.Name())
+		processImages(metadataPath, f.Name())
+		processChangelogs(metadataPath, f.Name())
 	}
 
-	if isErrored != nil {
+	if nErrors > 0 {
+		fmt.Fprintf(os.Stderr, "%d total checks failing!\n", nErrors)
 		os.Exit(1)
 	}
 }
 
-// processLocale will check all metadata items one by one for each locale. it
-// returns the last error if the metadata is voilating set guidelines or if
-// there was an error while processing any of the files. printing of errors is
-// handled internally by each function down the stream.
-func processLocale(basePath, locale string) (isErrored error) {
-	if err := processDescriptiveTexts(basePath, locale); err != nil {
-		isErrored = err
-	}
-
-	if err := processImages(basePath, locale); err != nil {
-		isErrored = err
-	}
-
-	if err := processChangelogs(basePath, locale); err != nil {
-		isErrored = err
-	}
-
-	return
-}
-
-// processDescriptiveTexts will check *.txt files in metadata. returns an error
-// if any of the checks fail. also prints all the errors for failing checks.
-func processDescriptiveTexts(basePath, locale string) (isErrored error) {
+// processDescriptiveTexts will check *.txt files in metadata. updates the count
+// of nErrors for failed checks. also prints all the errors for failing checks
+// and annonates corresponding files.
+func processDescriptiveTexts(basePath, locale string) {
 	const errLengthExceededFmt = "content length exceeded the limit! expected: %d, got: %d"
 	descriptiveFileLengths := map[string]int{
 		"title.txt":             50,
@@ -87,18 +71,18 @@ func processDescriptiveTexts(basePath, locale string) (isErrored error) {
 	}
 
 	for file, length := range descriptiveFileLengths {
-		count, err := getCharacterCount(filepath.Join(basePath, locale, file))
+		file = filepath.Join(basePath, locale, file)
+		count, err := getCharacterCount(file)
 		if err == nil && count > length {
 			err = fmt.Errorf(errLengthExceededFmt, length, count)
 		}
 
 		if err != nil {
-			isErrored = err
-			logError(locale, file, err)
+			nErrors++
+			annotateFileWithError(file, err)
+			logError(locale, filepath.Base(file), err)
 		}
 	}
-
-	return
 }
 
 // getCharacterCount counts the utf-8 characters in the given file.
@@ -111,126 +95,125 @@ func getCharacterCount(filePath string) (int, error) {
 	return utf8.RuneCountInString(strings.TrimSpace(string(content))), nil
 }
 
-// processImages process image assets in images/* including screenshots. returns
-// an error if any of the checks fail. also prints all the errors for failing
-// checks.
-func processImages(basePath, locale string) (isErrored error) {
+// processImages process image assets in images/* including screenshots. updates
+// the count of nErrors for failed checks. also prints all the errors for
+// failing checks and annonates corresponding files.
+func processImages(basePath, locale string) {
 	imagesBasePath := filepath.Join(basePath, locale, "images")
 	files, err := ioutil.ReadDir(imagesBasePath)
 	if err != nil && !os.IsNotExist(err) { // ignore not found errors since this is an optional dir
+		nErrors++
 		logError(locale, "images", err)
-		return err
+		return
 	}
 
 	for _, file := range files {
 		if file.IsDir() {
 			if strings.HasSuffix(file.Name(), "Screenshots") {
-				if err := processScreenshotImages(basePath, locale, file.Name()); err != nil {
-					isErrored = err
-				}
+				processScreenshotImages(basePath, locale, file.Name())
 			}
 		} else {
-			baseName := strings.TrimSuffix(filepath.Base(file.Name()), filepath.Ext(file.Name()))
-			config, err := getImageConfig(filepath.Join(imagesBasePath, file.Name()))
+			filePath := filepath.Join(imagesBasePath, file.Name())
+			fileName := strings.TrimSuffix(filepath.Base(file.Name()), filepath.Ext(file.Name()))
+			config, err := getImageConfig(filePath)
 			if err != nil {
-				logError(locale, baseName, fmt.Errorf("error while reading image: %s", err.Error()))
-				isErrored = err
+				nErrors++
+				err = fmt.Errorf("error while reading image: %s", err)
+				annotateFileWithError(filePath, err)
+				logError(locale, fileName, err)
 				continue
 			}
 
-			switch baseName {
+			errs := make([]error, 0)
+			switch fileName {
 			case "icon":
 				if config.width != config.height || config.width != 512 {
-					err = fmt.Errorf("must be 512x512")
-					logError(locale, baseName, err)
+					errs = append(errs, fmt.Errorf("must be 512x512"))
 				}
 				if config.format != "png" {
-					err = fmt.Errorf("must be a PNG")
-					logError(locale, baseName, err)
+					errs = append(errs, fmt.Errorf("must be a PNG"))
 				}
 				break
 			case "featureGraphic":
 				if config.width != 1024 || config.height != 500 {
-					err = fmt.Errorf("must be 1024x500")
-					logError(locale, baseName, err)
+					errs = append(errs, fmt.Errorf("must be 1024x500"))
 				}
 				if !config.opaque {
-					err = fmt.Errorf("must be opaque")
-					logError(locale, baseName, err)
+					errs = append(errs, fmt.Errorf("must be opaque"))
 				}
 				break
 			case "promoGraphic":
 				if config.width != 180 || config.height != 120 {
-					err = fmt.Errorf("must be 180x120")
-					logError(locale, baseName, err)
+					errs = append(errs, fmt.Errorf("must be 180x120"))
 				}
 				if !config.opaque {
-					err = fmt.Errorf("must be opaque")
-					logError(locale, baseName, err)
+					errs = append(errs, fmt.Errorf("must be opaque"))
 				}
 				break
 			case "tvBanner":
 				if config.width != 1280 || config.height != 720 {
-					err = fmt.Errorf("must be 1280x720")
-					logError(locale, baseName, err)
+					errs = append(errs, fmt.Errorf("must be 1280x720"))
 				}
 				if !config.opaque {
-					err = fmt.Errorf("must be opaque")
-					logError(locale, baseName, err)
+					errs = append(errs, fmt.Errorf("must be opaque"))
 				}
 				break
 			}
 
-			if err != nil {
-				isErrored = err
+			for _, err = range errs {
+				nErrors++
+				annotateFileWithError(filePath, err)
+				logError(locale, fileName, err)
 			}
 		}
 	}
-
-	return
 }
 
-// processScreenshotImages checks all the screenshot images. returns an error if
-// any of the checks fail. also prints the errors for all the failing checks.
-func processScreenshotImages(basePath, locale, dirName string) (isErrored error) {
+// processScreenshotImages checks all the screenshot images. updates the count
+// of nErrors for failed checks. also prints all the errors for failing checks
+// and annonates corresponding files.
+func processScreenshotImages(basePath, locale, dirName string) {
 	path := filepath.Join(basePath, locale, "images", dirName)
 	files, err := ioutil.ReadDir(path)
 	if err != nil {
+		nErrors++
 		logError(locale, dirName, err)
-		return err
+		return
 	}
 
 	for _, file := range files {
-		config, err := getImageConfig(filepath.Join(path, file.Name()))
+		filePath := filepath.Join(path, file.Name())
+		config, err := getImageConfig(filePath)
 		if err != nil {
+			nErrors++
+			annotateFileWithError(filePath, err)
 			logError(locale, filepath.Join(dirName, file.Name()), err)
-			isErrored = err
 			continue
 		}
 
 		if config.width < 320 || config.width > 3840 {
+			nErrors++
 			err = fmt.Errorf("width should be at least 320px and at most 3840px")
+			annotateFileWithError(filePath, err)
 			logError(locale, filepath.Join(dirName, file.Name()), err)
 		}
 
 		if config.height < 320 || config.height > 3840 {
+			nErrors++
 			err = fmt.Errorf("height should be at least 320px and at most 3840px")
+			annotateFileWithError(filePath, err)
 			logError(locale, filepath.Join(dirName, file.Name()), err)
 		}
 
 		width := float64(config.width)
 		height := float64(config.height)
 		if math.Max(width, height)/math.Min(height, width) > 2.0 {
+			nErrors++
 			err = fmt.Errorf("aspect ratio of max edge to min edge should be at most 2")
+			annotateFileWithError(filePath, err)
 			logError(locale, filepath.Join(dirName, file.Name()), err)
 		}
-
-		if err != nil {
-			isErrored = err
-		}
 	}
-
-	return
 }
 
 // getImageConfig returns imageConfig for the given image file. returns an error
@@ -273,9 +256,9 @@ func getImageConfig(filePath string) (*imageConfig, error) {
 }
 
 // processDescriptiveTexts will check changelogs/*.txt files in metadata.
-// returns an error if any of the checks fail. also prints all the errors for
-// failing checks.
-func processChangelogs(basePath, locale string) (isErrored error) {
+// updates the count of nErrors for failed checks. also prints all the errors
+// for failing checks and annonates corresponding files.
+func processChangelogs(basePath, locale string) {
 	const maxContentLength = 500
 	const changelogsDirName = "changelogs"
 	const errLengthExceededFmt = "content length exceeded the limit! expected: %d, got: %d"
@@ -284,28 +267,39 @@ func processChangelogs(basePath, locale string) (isErrored error) {
 	files, err := ioutil.ReadDir(changelogPath)
 	if err != nil && !os.IsNotExist(err) {
 		// ignore not found errors since this is an optional dir
+		nErrors++
 		logError(locale, changelogsDirName, err)
-		return err
+		return
 	}
 	for _, file := range files {
 		if file.IsDir() {
 			continue // not expecting one.. but okay...?
 		}
 
-		count, err := getCharacterCount(filepath.Join(changelogPath, file.Name()))
+		filePath := filepath.Join(changelogPath, file.Name())
+		count, err := getCharacterCount(filePath)
 		if err == nil && count > maxContentLength {
 			err = fmt.Errorf(errLengthExceededFmt, maxContentLength, count)
 		}
 
 		if err != nil {
+			nErrors++
+			annotateFileWithError(filePath, err)
 			logError(locale, filepath.Join(changelogsDirName, file.Name()), err)
-			isErrored = err
 		}
 	}
-	return
 }
 
 // logError logs the error
 func logError(locale, file string, err error) {
 	fmt.Fprintf(os.Stderr, "%s/%s: %s\n", locale, file, err.Error())
+}
+
+func annotateFileWithError(filePath string, err error) {
+	const errAnnotationFmt = "::error file=%s::%s\n"
+	v := strings.ReplaceAll(err.Error(), "%", "%25")
+	v = strings.ReplaceAll(v, "\r", "%0D")
+	v = strings.ReplaceAll(v, "\n", "%0A")
+
+	fmt.Printf(errAnnotationFmt, filePath, v)
 }
