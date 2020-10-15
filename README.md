@@ -10,6 +10,7 @@ validation logic written in Golang.
 ## Features
 
 - Zero config
+- Supports GitHub file annotations
 - Checks title, short description, full description and changelog texts
 - Checks promo images
 - Checks screenshots

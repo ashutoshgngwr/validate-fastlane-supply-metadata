@@ -10,8 +10,9 @@ inputs:
     default: ./fastlane
 runs:
   using: docker
-  image: docker://ashutoshgngwr/validate-fastlane-supply-metadata:v1.1.1
+  image: docker://ashutoshgngwr/validate-fastlane-supply-metadata:v1.2.0
   args:
+    - -enable-ga-annotations
     - -fastlane-path=${{ inputs.fastlaneDir }}
 branding:
   color: blue
