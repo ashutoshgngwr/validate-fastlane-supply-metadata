@@ -75,7 +75,7 @@ func main() {
 		if usePlayStoreLocales && !playStoreLocales.contains(f.Name()) {
 			errs = append(errs, &validationError{
 				File: localePath,
-				Err:  fmt.Errorf("unrecognised locale"),
+				Err:  fmt.Errorf("unrecognised locale: %s", f.Name()),
 			})
 		}
 
