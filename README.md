@@ -14,6 +14,7 @@ validation logic written in Golang.
 - Checks title, short description, full description and changelog texts
 - Checks promo images
 - Checks screenshots
+- Optionally checks if a locale is supported by the Play Store Listing
 - Tiny docker image ~800KB
 - Can be used without GitHub actions
 
@@ -42,7 +43,9 @@ jobs:
     - uses: actions/checkout@v1
     - uses: ashutoshgngwr/validate-fastlane-supply-metadata@v1
       with:
-        fastlaneDir: ./fastlane # optional. default is './fastlane'
+        fastlaneDir: ./fastlane # optional. default is './fastlane'.
+        # enable check to validate if a locale is supported by the Play Store Listing.
+        usePlayStoreLocales: true # optional. default is false.
 ```
 
 ### Without GitHub actions
