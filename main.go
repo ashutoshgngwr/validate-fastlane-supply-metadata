@@ -44,12 +44,14 @@ func (e *validationError) annotateGitHubFile() {
 
 var (
 	fastlanePath        string
-	enableGAAnnotations bool
+	useFileAnnotations  bool
+	usePlayStoreLocales bool
 )
 
 func init() {
 	flag.StringVar(&fastlanePath, "fastlane-path", "./fastlane", "path to the Fastlane directory")
-	flag.BoolVar(&enableGAAnnotations, "enable-ga-annotations", false, "enables file annotations for GitHub action")
+	flag.BoolVar(&useFileAnnotations, "ga-file-annotations", false, "enables file annotations for GitHub action")
+	flag.BoolVar(&usePlayStoreLocales, "play-store-locales", false, "throw error if a locale isn't recognised by Play Store")
 	flag.Parse()
 }
 
@@ -70,6 +72,13 @@ func main() {
 		}
 
 		localePath := filepath.Join(metadataPath, f.Name())
+		if usePlayStoreLocales && !playStoreLocales.contains(f.Name()) {
+			errs = append(errs, &validationError{
+				File: localePath,
+				Err:  fmt.Errorf("unrecognised locale"),
+			})
+		}
+
 		imagesPath := filepath.Join(localePath, "images")
 		changelogsPath := filepath.Join(localePath, "changelogs")
 		errs = append(errs, checkDescriptiveTexts(localePath)...)
@@ -79,7 +88,7 @@ func main() {
 
 	fmt.Println("found", len(errs), "errors!")
 	for _, err := range errs {
-		if ve, ok := err.(*validationError); ok && enableGAAnnotations {
+		if ve, ok := err.(*validationError); ok && useFileAnnotations {
 			ve.annotateGitHubFile()
 		}
 

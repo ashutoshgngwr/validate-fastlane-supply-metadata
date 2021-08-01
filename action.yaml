@@ -8,11 +8,16 @@ inputs:
     description: Path of the Fastlane directory
     required: false
     default: ./fastlane
+  usePlayStoreLocales:
+    description: Throw error if a locale isn't recognised by Google Play Store
+    required: false
+    default: "false"
 runs:
   using: docker
   image: docker://ashutoshgngwr/validate-fastlane-supply-metadata:v1.2.0
   args:
-    - -enable-ga-annotations
+    - -ga-file-annotations
+    - -play-store-locales=${{ inputs.usePlayStoreLocales }}
     - -fastlane-path=${{ inputs.fastlaneDir }}
 branding:
   color: blue
