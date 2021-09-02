@@ -1,7 +1,7 @@
 # Validate Fastlane Supply Metadata
 
-![Docker build](https://github.com/ashutoshgngwr/validate-fastlane-supply-metadata/workflows/Docker/badge.svg)
-![Docker image size](https://img.shields.io/docker/image-size/ashutoshgngwr/validate-fastlane-supply-metadata?sort=semver)
+[![Docker build](https://github.com/ashutoshgngwr/validate-fastlane-supply-metadata/workflows/Docker/badge.svg)](https://github.com/ashutoshgngwr/validate-fastlane-supply-metadata/actions/workflows/docker.yaml)
+[![Docker image size](https://img.shields.io/docker/image-size/ashutoshgngwr/validate-fastlane-supply-metadata?sort=semver)](https://hub.docker.com/r/ashutoshgngwr/validate-fastlane-supply-metadata/tags?page=1&ordering=last_updated)
 
 A Github Action to statically validate [Fastlane](https://docs.fastlane.tools) metadata
 for Android ([supply](https://docs.fastlane.tools/actions/supply/)) using a simple
@@ -15,7 +15,7 @@ validation logic written in Golang.
 - Checks promo images
 - Checks screenshots
 - Optionally checks if a locale is supported by the Play Store Listing
-- Tiny docker image ~800KB
+- Tiny docker image ~700KB
 - Can be used without GitHub actions
 
 ## Example Use Case
@@ -50,11 +50,25 @@ jobs:
 
 ### Without GitHub actions
 
-The GitHub action relies on a docker image which can be used directly.
+The GitHub action uses on a [docker image][dmg] under the hood. You can use it
+directly for environments other than GitHub actions.
+
+[dmg]: https://hub.docker.com/r/ashutoshgngwr/validate-fastlane-supply-metadata
 
 ```sh
 docker run --rm --workdir /app --mount type=bind,source="$(pwd)",target=/app \
    ashutoshgngwr/validate-fastlane-supply-metadata:v1 -help
+```
+
+The default entry point accepts the following command-line flags.
+
+```text
+-fastlane-path string
+    path to the Fastlane directory (default "./fastlane")
+-ga-file-annotations bool
+    enables file annotations for GitHub action (default: false)
+-play-store-locales bool
+    throw error if a locale isn't recognised by Play Store (default: false)
 ```
 
 ## License
