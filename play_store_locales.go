@@ -1,10 +1,40 @@
 package main
 
+import (
+	"math"
+	"strings"
+
+	"github.com/agnivade/levenshtein"
+)
+
 type locales map[string]interface{}
 
 func (l locales) contains(locale string) bool {
 	_, ok := l[locale]
 	return ok
+}
+
+// closestMatch returns the closest match for the `locale` this `locales`.
+func (l locales) closestMatch(locale string) string {
+	d := math.MaxInt
+	s := ""
+
+	for key := range l {
+		// the following has the highest priority since play store refuses many
+		// locales with missing region suffix.
+		splits := strings.Split(key, "-")
+		if len(splits) > 1 && splits[0] == locale {
+			return key
+		}
+
+		nd := levenshtein.ComputeDistance(locale, key)
+		if nd < d {
+			d = nd
+			s = key
+		}
+	}
+
+	return s
 }
 
 // playStoreLocales declares locales recognised by the Play Store Listing.

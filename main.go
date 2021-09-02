@@ -73,9 +73,10 @@ func main() {
 
 		localePath := filepath.Join(metadataPath, f.Name())
 		if usePlayStoreLocales && !playStoreLocales.contains(f.Name()) {
+			const errFmt = "play store doesn't recognise %q locale: closest alternative is %q"
 			errs = append(errs, &validationError{
 				File: localePath,
-				Err:  fmt.Errorf("unrecognised locale: %s", f.Name()),
+				Err:  fmt.Errorf(errFmt, f.Name(), playStoreLocales.closestMatch(f.Name())),
 			})
 		}
 
