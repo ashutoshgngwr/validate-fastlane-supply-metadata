@@ -105,7 +105,7 @@ func main() {
 // `error` with all IO and validation errors.
 func checkDescriptiveTexts(localePath string) []error {
 	descriptiveFileLengths := map[string]int{
-		"title.txt":             50,
+		"title.txt":             30,
 		"short_description.txt": 80,
 		"full_description.txt":  4000,
 	}
