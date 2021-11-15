@@ -14,7 +14,7 @@ inputs:
     default: "false"
 runs:
   using: docker
-  image: docker://ashutoshgngwr/validate-fastlane-supply-metadata:v1.4.0
+  image: docker://ashutoshgngwr/validate-fastlane-supply-metadata:v1.4.1
   args:
     - -ga-file-annotations
     - -play-store-locales=${{ inputs.usePlayStoreLocales }}
