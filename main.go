@@ -49,7 +49,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&fastlanePath, "fastlane-path", "./fastlane", "path to the Fastlane directory")
+	flag.StringVar(&fastlanePath, "fastlane-path", "./fastlane/metadata/android", "path to the Fastlane Android directory")
 	flag.BoolVar(&useFileAnnotations, "ga-file-annotations", false, "enables file annotations for GitHub action")
 	flag.BoolVar(&usePlayStoreLocales, "play-store-locales", false, "throw error if a locale isn't recognised by Play Store")
 	flag.Parse()

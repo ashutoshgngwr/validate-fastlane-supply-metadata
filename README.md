@@ -34,6 +34,10 @@ from the Play Store listing.
 
 ## Usage
 
+_See [v1
+README](https://github.com/ashutoshgngwr/validate-fastlane-supply-metadata/blob/v1/README.md)
+if you're using v1._
+
 ```yaml
 on: [pull_request]
 jobs:
@@ -41,7 +45,7 @@ jobs:
   runs-on: ubuntu-latest
   steps:
     - uses: actions/checkout@v1
-    - uses: ashutoshgngwr/validate-fastlane-supply-metadata@v1
+    - uses: ashutoshgngwr/validate-fastlane-supply-metadata@v2
       with:
         fastlaneDir: ./android-metadata # optional. default is './fastlane/metadata/android'.
         # enable check to validate if a locale is supported by the Play Store Listing.
@@ -57,14 +61,14 @@ directly for environments other than GitHub actions.
 
 ```sh
 docker run --rm --workdir /app --mount type=bind,source="$(pwd)",target=/app \
-   ashutoshgngwr/validate-fastlane-supply-metadata:v1 -help
+   ashutoshgngwr/validate-fastlane-supply-metadata:v2 -help
 ```
 
 The default entry point accepts the following command-line flags.
 
 ```text
 -fastlane-path string
-    path to the Fastlane directory (default "./fastlane")
+    path to the Fastlane Android directory (default "./fastlane/metadata/android")
 -ga-file-annotations bool
     enables file annotations for GitHub action (default: false)
 -play-store-locales bool
