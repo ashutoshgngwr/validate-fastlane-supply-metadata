@@ -43,7 +43,7 @@ jobs:
     - uses: actions/checkout@v1
     - uses: ashutoshgngwr/validate-fastlane-supply-metadata@v1
       with:
-        fastlaneDir: ./fastlane # optional. default is './fastlane'.
+        fastlaneDir: ./android-metadata # optional. default is './fastlane/metadata/android'.
         # enable check to validate if a locale is supported by the Play Store Listing.
         usePlayStoreLocales: true # optional. default is false.
 ```

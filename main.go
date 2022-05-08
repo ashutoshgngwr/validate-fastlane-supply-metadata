@@ -56,11 +56,10 @@ func init() {
 }
 
 func main() {
-	metadataPath := filepath.Join(fastlanePath, "metadata", "android")
-	files, err := ioutil.ReadDir(metadataPath)
+	files, err := ioutil.ReadDir(fastlanePath)
 	if err != nil {
 		const errFmt = "failed to read directory %q: %s\n"
-		fmt.Fprintf(os.Stderr, errFmt, metadataPath, err)
+		fmt.Fprintf(os.Stderr, errFmt, fastlanePath, err)
 		os.Exit(1)
 	}
 
@@ -71,7 +70,7 @@ func main() {
 			continue
 		}
 
-		localePath := filepath.Join(metadataPath, f.Name())
+		localePath := filepath.Join(fastlanePath, f.Name())
 		if usePlayStoreLocales && !playStoreLocales.contains(f.Name()) {
 			const errFmt = "play store doesn't recognise %q locale: closest alternative is %q"
 			errs = append(errs, &validationError{

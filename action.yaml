@@ -5,9 +5,9 @@ description: >-
   the Play Store listing constraints.
 inputs:
   fastlaneDir:
-    description: Path of the Fastlane directory
+    description: Path of the Fastlane Android directory
     required: false
-    default: ./fastlane
+    default: ./fastlane/metadata/android
   usePlayStoreLocales:
     description: Throw error if a locale isn't recognised by Google Play Store
     required: false
