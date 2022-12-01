@@ -192,7 +192,7 @@ func checkImages(imagesPath string) []error {
 			if !config.opaque {
 				errs = append(errs, &validationError{
 					File: filePath,
-					Err:  fmt.Errorf("featureGraphic must be opaque"),
+					Err:  fmt.Errorf("featureGraphic must be opaque and must not have the alpha channel"),
 				})
 			}
 		case "promoGraphic":
@@ -206,7 +206,7 @@ func checkImages(imagesPath string) []error {
 			if !config.opaque {
 				errs = append(errs, &validationError{
 					File: filePath,
-					Err:  fmt.Errorf("promoGraphic must be opaque"),
+					Err:  fmt.Errorf("promoGraphic must be opaque and must not have the alpha channel"),
 				})
 			}
 		case "tvBanner":
@@ -220,7 +220,7 @@ func checkImages(imagesPath string) []error {
 			if !config.opaque {
 				errs = append(errs, &validationError{
 					File: filePath,
-					Err:  fmt.Errorf("tvBanner must be opaque"),
+					Err:  fmt.Errorf("tvBanner must be opaque and must not have the alpha channel"),
 				})
 			}
 		}
