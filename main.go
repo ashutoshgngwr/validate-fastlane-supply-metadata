@@ -267,8 +267,8 @@ func checkScreenshots(screenshotsPath string) []error {
 		width := float64(config.width)
 		height := float64(config.height)
 		ratio := math.Max(width, height) / math.Min(height, width)
-		if ratio > 2.0 {
-			const errFmt = "'max:min' edge radio should be at most 2.0: got=%.2f"
+		if ratio > 2.3 {
+			const errFmt = "'max:min' edge radio should be at most 2.3: got=%.2f"
 			errs = append(errs, &validationError{
 				File: imagePath,
 				Err:  fmt.Errorf(errFmt, ratio),
